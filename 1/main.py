@@ -5,7 +5,7 @@ now = datetime.datetime.now()
 
 sg.theme('Hotdogstand')   
 
-layout = [  [sg.Text('Some text on Row 1')],
+layout = [  [sg.Text('RUN!')],
             [sg.Text('Enter something on Row 2'), sg.InputText()],
             [sg.Button('Ok'), sg.Button('Cancel')] ]
 
@@ -21,9 +21,7 @@ while True:
     piev = str(f'{now}: {values[0]}\n')
     fails.write(piev)
    
+
+
 fails.close()
-
-
-print(now)
-
 window.close()
