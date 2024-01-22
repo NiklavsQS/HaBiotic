@@ -17,10 +17,12 @@ while True:
     if event == sg.WIN_CLOSED or event == 'Cancel': 
         break
     print(values[0])
-
-fails = open("dati.txt", "w")
-fails.write(values[0])
+    fails = open("dati.txt", "a")
+    piev = str(f'{now}: {values[0]}\n')
+    fails.write(piev)
+   
 fails.close()
+
 
 print(now)
 
