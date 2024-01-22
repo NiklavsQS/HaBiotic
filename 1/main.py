@@ -1,4 +1,7 @@
 import PySimpleGUI as sg
+import datetime
+
+now = datetime.datetime.now()
 
 sg.theme('Hotdogstand')   
 
@@ -13,6 +16,12 @@ while True:
     event, values = window.read()
     if event == sg.WIN_CLOSED or event == 'Cancel': 
         break
-    print('You entered ', values[0])
+    print(values[0])
+
+fails = open("dati.txt", "w")
+fails.write(values[0])
+fails.close()
+
+print(now)
 
 window.close()
