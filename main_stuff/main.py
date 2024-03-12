@@ -38,7 +38,7 @@ while True:
     event, values = window.read()
 
     # Check for window closed or Cancel button clicked
-    if event in ('sg.WIN_CLOSED' or 'Cancel'):
+    if event in (sg.WIN_CLOSED, 'Cancel'):
         break
 
     if event == 'submit':
