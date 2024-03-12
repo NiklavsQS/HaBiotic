@@ -14,14 +14,14 @@ fails = open("dati.txt", "a")
 esosie_paradumi = []
 
 # Read existing entries from 'paradumi.txt'
-with open(r'main_stuff\paradumi.txt','r') as ppar2:
+with open(r'paradaritajs\main_stuff\paradumi.txt','r') as ppar2:
     ppar2.seek(0)
     lines = ppar2.readlines()
     for line in lines:
         esosie_paradumi.append(line.strip())  # Strip to remove leading/trailing whitespaces
 
 # Open 'paradumi.txt' for appending new entries
-ppar = open(r'main_stuff\paradumi.txt','a')
+ppar = open(r'paradaritajs\main_stuff\paradumi.txt','a')
 
 # GUI layout
 layout = [
