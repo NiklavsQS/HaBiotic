@@ -4,7 +4,7 @@ import datetime
 class RoutineRadar:
     def __init__(self):
         # Get current date and time
-        self.now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.now = datetime.datetime.now().strftime("%Y-%m-%d")
 
         # Set the PySimpleGUI theme
         sg.theme('SystemDefault')
@@ -22,7 +22,7 @@ class RoutineRadar:
         self.layout = [
             [sg.Text('Ieraksti paradumu vai izvelies no ieprieksejajiem'), sg.InputText(key='paradums')],
             [sg.Button('submit'), sg.Button('Cancel')],
-            [sg.Column([[sg.Checkbox(paradums, key=f'checkbox_{i}')] for i, paradums in enumerate(self.esosie_paradumi)])]
+            [sg.Column([[sg.Checkbox(habit, key=f'checkbox_{i}')] for i, habit in enumerate(self.esosie_paradumi)])]
         ]
 
         # Create the PySimpleGUI window
@@ -56,14 +56,15 @@ class RoutineRadar:
 
     def handle_submit(self, values):
         # Retrieve the values from the checkboxes
-        selected_indices = [i for i, paradums in enumerate(self.esosie_paradumi) if values.get(f'checkbox_{i}')]
+        selected_indices = [i for i, habit in enumerate(self.esosie_paradumi) if values.get(f'checkbox_{i}')]
     
         # Retrieve the new entry from the input field
-        new_entry_value = values['paradums'].strip()
+        new_entry_value = values['paradums']
     
         # Handle new entries
         for entry in new_entry_value.split(','):
             entry = entry.strip()
+            print(entry)
             if entry not in self.esosie_paradumi:
                 piev = f'{self.now}: {entry}\n'
                 self.fails.write(piev)
@@ -79,8 +80,6 @@ class RoutineRadar:
                 piev = f'{self.now}: {selected_value}\n'
                 self.fails.write(piev)
                 print("Selected entry written:", piev)
-                # Write the selected entry to 'paradumi.txt' and update the list
-                self.ppar.write(selected_value + '\n')
     
 
 if __name__ == "__main__":
