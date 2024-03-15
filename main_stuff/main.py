@@ -72,6 +72,11 @@ class RoutineRadar:
                 # Write the new entry to 'paradumi.txt' and update the list
                 self.ppar.write('\n' + entry)
                 self.esosie_paradumi.append(entry)
+            else:
+                piev = f'{self.now}: {entry}\n'
+                self.fails.write(piev)
+                print("New entry written:", piev)
+
     
         # Handle selected values separately
         for i in selected_indices:
