@@ -10,7 +10,7 @@ class RoutineRadar:
         sg.theme('SystemDefault')
 
         # Open file for appending new entries
-        self.fails = open("dati.txt", "a")
+        self.fails = open("dati.csv", "a")
 
         # List to store existing entries from 'paradumi.txt'
         self.esosie_paradumi = self.read_existing_entries()
