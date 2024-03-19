@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 import datetime
 
-class RoutineRadar:
+class HaBiotic:
     def __init__(self):
         # Get current date and time
         self.now = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -16,7 +16,7 @@ class RoutineRadar:
         self.esosie_paradumi = self.read_existing_entries()
 
         # Open 'paradumi.txt' for appending new entries
-        self.ppar = open(r'paradaritajs\main_stuff\paradumi.txt', 'a')
+        self.ppar = open(r'HaBiotic\main_stuff\paradumi.txt', 'a')
 
         # GUI layout
         self.layout = [
@@ -26,11 +26,11 @@ class RoutineRadar:
         ]
 
         # Create the PySimpleGUI window
-        self.window = sg.Window("Routine Radar", self.layout)
+        self.window = sg.Window("HaBiotic", self.layout)
 
     def read_existing_entries(self):
         esosie_paradumi = []
-        with open(r'paradaritajs\main_stuff\paradumi.txt', 'r') as ppar2:
+        with open(r'HaBiotic\main_stuff\paradumi.txt', 'r') as ppar2:
             ppar2.seek(0)
             lines = ppar2.readlines()
             for line in lines:
@@ -88,5 +88,5 @@ class RoutineRadar:
     
 
 if __name__ == "__main__":
-    app = RoutineRadar()
+    app = HaBiotic()
     app.run()
