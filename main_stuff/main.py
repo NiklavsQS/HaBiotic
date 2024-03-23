@@ -1,5 +1,6 @@
 import PySimpleGUI as sg
 import datetime
+import sqlite3 as sq
 
 class HaBiotic:
     def __init__(self):
@@ -10,7 +11,19 @@ class HaBiotic:
         sg.theme('SystemDefault')
 
         # Open file for appending new entries
-        self.fails = open("dati.csv", "a")
+        self.fails = sq.connect('dati.db')
+        c = self.fails.cursor()
+        c.execute('''CREATE TABLE IF NOT EXISTS entries(
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              habit TEXT,
+              time TEXT   
+        )''')
+        c.execute('''CREATE TABLE IF NOT EXISTS users(
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_name TEXT,
+              password TEXT   
+        )''')
+
 
         # List to store existing entries from 'paradumi.txt'
         self.esosie_paradumi = self.read_existing_entries()
@@ -18,12 +31,16 @@ class HaBiotic:
         # Open 'paradumi.txt' for appending new entries
         self.ppar = open(r'HaBiotic\main_stuff\paradumi.txt', 'a')
 
-        # GUI layout
+        
         self.layout = [
-            [sg.Text('Ieraksti paradumu vai izvelies no ieprieksejajiem'), sg.InputText(key='paradums')],
-            [sg.Button('submit'), sg.Button('Cancel')],
-            [sg.Column([[sg.Checkbox(habit, key=f'checkbox_{i}')] for i, habit in enumerate(self.esosie_paradumi)])]
-        ]
+             [sg.Text('Ieraksti paradumu vai izvelies no ieprieksejajiem'), sg.InputText(key='paradums')],
+             [sg.Text('Ieraksti lietotājvārdu'), sg.InputText(key='Uname')],
+             [sg.Text('Ieraksti paroli'), sg.InputText(key='Pass')],
+             [sg.Text('Ieraksti paradumu vai izvelies no ieprieksejajiem'), sg.InputText(key='paradums')],
+             [sg.Button('submit'), sg.Button('Cancel')],
+             [sg.Column([[sg.Checkbox(habit, key=f'checkbox_{i}')] for i, habit in enumerate(self.esosie_paradumi)])]
+         ]
+ 
 
         # Create the PySimpleGUI window
         self.window = sg.Window("HaBiotic", self.layout)
