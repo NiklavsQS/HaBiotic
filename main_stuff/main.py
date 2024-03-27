@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 import datetime
 import sqlite3 as sq
-
+lietotaja_parbaude = "SELECT * FROM users WHERE user_name = ? AND password = ?"
 class HaBiotic:
     def __init__(self):
         # Get current date and time
@@ -12,18 +12,23 @@ class HaBiotic:
 
         # Open file for appending new entries
         self.fails = sq.connect('dati.db')
-        c = self.fails.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS entries(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              habit TEXT,
-              time TEXT   
-        )''')
-        c.execute('''CREATE TABLE IF NOT EXISTS users(
+        self.c = self.fails.cursor()
+        self.c.execute('''CREATE TABLE IF NOT EXISTS users(
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               user_name TEXT,
               password TEXT   
         )''')
 
+        self.c.execute('''CREATE TABLE IF NOT EXISTS entries(
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              UserID,
+              user_id INT REFERENCES users(id),
+              habit TEXT,
+              time TEXT   
+              )''')
+  
+        
+        
 
         # List to store existing entries from 'paradumi.txt'
         self.esosie_paradumi = self.read_existing_entries()
@@ -64,7 +69,15 @@ class HaBiotic:
                 break
 
             if event == 'submit':
-                self.handle_submit(values)
+                self.c.execute(lietotaja_parbaude, ('Uname'),('Pass'))
+                lietotajs = self.c.fetchone()
+                if lietotajs:
+                    self.handle_submit(values)  
+                else:
+                    print('te bus popups pieregistreties vai atcelt')
+                
+
+            
 
         # Close the file handles and the window
         self.ppar.close()
