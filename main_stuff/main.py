@@ -116,7 +116,7 @@ class HaBiotic:
                 piev = (str(self.user_id), str(entry), str(self.now))
                 self.c.execute("INSERT INTO entries (user_id ,habit ,time) VALUES (?, ?, ?)", piev)
                 self.fails.commit
-                print("New entry written:", entry)
+                print("New entry written:", piev)
                 # Write the new entry to 'paradumi.txt' and update the list
                 self.ppar.write('\n' + entry)
                 self.esosie_paradumi.append(entry)
@@ -124,7 +124,7 @@ class HaBiotic:
                 piev = (str(self.user_id), str(entry), str(self.now))
                 self.c.execute("INSERT INTO entries (user_id ,habit ,time) VALUES (?, ?, ?)", piev)
                 self.fails.commit()
-                print("New entry written:", entry)
+                print("New entry written:", piev)
   
         # Handle selected values separately
         for i in selected_indices:
