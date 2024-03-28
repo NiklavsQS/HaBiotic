@@ -33,6 +33,7 @@ class HaBioticLogin:
                 self.user = self.c.fetchone()
                 if self.user:
                     if self.user[1] == values['Pass']:  # Check if password matches
+                        self.window.close()
                         return self.user[0]  # Return the user ID
                     else:
                         sg.popup_ok('Invalid password')
