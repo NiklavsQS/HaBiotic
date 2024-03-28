@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import datetime
 import sqlite3 as sq
 
+# SQL queries
 lietotaja_parbaude = "SELECT * FROM users WHERE user_name = ? AND password = ?"
 nepareiza_parole = "SELECT * FROM users WHERE user_name = ?"
 lietotaja_id = "SELECT id FROM users WHERE user_name = ?"
@@ -10,6 +11,7 @@ paradumu_atlase = "SELECT * FROM habits WHERE user_id = ?"
 class HaBioticLogin:
     def __init__(self):
         sg.theme('SystemDefault')
+        # Login window layout
         self.layout = [
             [sg.Text('Username'), sg.InputText(key='Uname')],
             [sg.Text('Password'), sg.InputText(key='Pass', password_char='*')],
@@ -23,8 +25,10 @@ class HaBioticLogin:
             if event in (sg.WIN_CLOSED, 'Cancel'):
                 return None
             if event == 'Login':
+                # Connect to the database
                 self.conn = sq.connect('dati.db')
                 self.c = self.conn.cursor()
+                # Check if user exists and password is correct
                 self.c.execute("SELECT * FROM users WHERE user_name=?", (values['Uname'],))
                 self.user = self.c.fetchone()
                 if self.user:
@@ -62,6 +66,7 @@ class HaBiotic:
         self.fails = sq.connect('dati.db')
         self.d = self.par.cursor()
         self.c = self.fails.cursor()
+        # Create tables if they do not exist
         self.d.execute('''CREATE TABLE IF NOT EXISTS habits(
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               user_id INT REFERENCES users(id),
@@ -84,8 +89,10 @@ class HaBiotic:
         self.window = sg.Window("HaBiotic", self.layout)
 
     def create_layout(self):
+        # Fetch existing habits from the database
         self.d.execute(paradumu_atlase, (self.user_id,))
         esosie_paradumi = [row[2] for row in self.d.fetchall()]
+        # Main window layout
         layout = [
             [sg.Text('Enter habit or select from existing'), sg.InputText(key='paradums')],
             [sg.Column([[sg.Checkbox(habit, key=f'checkbox_{i}')] for i, habit in enumerate(esosie_paradumi)])],
@@ -105,6 +112,7 @@ class HaBiotic:
                     entry = entry.strip()
                     if entry:
                         if entry not in self.layout[1]:
+                            # Insert new entry into entries and habits tables
                             piev = (self.user_id, entry, self.now)
                             self.c.execute("INSERT INTO entries (user_id ,habit ,time) VALUES (?, ?, ?)", piev)
                             self.fails.commit()
