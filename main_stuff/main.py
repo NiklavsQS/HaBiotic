@@ -41,23 +41,43 @@ class HaBioticLogin:
                     sg.popup_ok('User does not exist. Please register or try a different username.')
             elif event == 'Register':
                 self.window.close()
-                self.register()
+                user_id = self.register()  # Get user ID after registration
+                if user_id is not None:
+                    return user_id  # Return the user ID after registration
 
         self.window.close()
 
     def register(self):
         conn = sq.connect('dati.db')
         c = conn.cursor()
-        n_uname = sg.popup_get_text('ievadi jauno lietotājvārdu', title="Username")
-        c.execute(nepareiza_parole, (n_uname,))
-        user_check = c.fetchone()
-        if user_check:
-            sg.popup_ok('lietotājs jau pastāv')
-        else:
-            n_pass = sg.popup_get_text('ievadi jauno paroli', title="Username")
-            new_user = (n_uname,n_pass)
-            c.execute("INSERT INTO users (user_name, password) VALUES (?, ?)", new_user)
-            conn.commit()
+        
+        while True:
+            n_uname = sg.popup_get_text('Ievadi jauno lietotājvārdu', title="Username")
+            if not n_uname:
+                sg.popup('Jaunais lietotājvārds netika ievadīts')
+                return None  # Return None if user cancels registration
+                
+            c.execute(nepareiza_parole, (n_uname,))
+            user_check = c.fetchone()
+            if user_check:
+                sg.popup('Lietotājs jau pastāv')
+            else:
+                break  # Break the loop if the username is valid
+        
+        while True:
+            n_pass = sg.popup_get_text('Ievadi jauno paroli', title="Password", password_char='*')
+            if not n_pass:
+                sg.popup('Jaunā parole netika ievadīta')
+                return None  # Return None if user cancels registration
+            else:
+                break  # Break the loop if the password is valid
+        
+        new_user = (n_uname, n_pass)
+        c.execute("INSERT INTO users (user_name, password) VALUES (?, ?)", new_user)
+        conn.commit()
+        
+        return c.lastrowid  # Return the last inserted row ID
+
 
 class HaBiotic:
     def __init__(self, user_id):
