@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 import datetime
 import sqlite3 as sq
-
+from cryptography.fernet import Fernet as Fer
 # SQL queries
 lietotaja_parbaude = "SELECT * FROM users WHERE user_name = ? AND password = ?"
 nepareiza_parole = "SELECT * FROM users WHERE user_name = ?"
@@ -81,6 +81,13 @@ class HaBioticLogin:
 
 class HaBiotic:
     def __init__(self, user_id):
+        with open('key.key', 'rb') as keyread:
+            self.key = keyread.read()
+        if len(self.key) == 0:
+            keygen = Fer.generate_key()
+            self.key = keygen
+            with open('key.key', 'wb') as keywrite:
+                keywrite.write(self.key)
         self.user_id = user_id
         self.now = datetime.datetime.now().strftime("%Y-%m-%d")
         self.par = sq.connect('paradumi.db')
@@ -112,17 +119,18 @@ class HaBiotic:
     def create_layout(self):
         # Fetch existing habits from the database
         self.d.execute(paradumu_atlase, (self.user_id,))
-        esosie_paradumi = [row[2] for row in self.d.fetchall()]
+        self.esosie_paradumi = [row[2] for row in self.d.fetchall()]
         # Main window layout
         layout = [
             [sg.Text('Enter habit or select from existing'), sg.InputText(key='paradums')],
-            [sg.Column([[sg.Checkbox(habit, key=f'checkbox_{i}')] for i, habit in enumerate(esosie_paradumi)])],
+            [sg.Column([[sg.Checkbox(habit, key=f'checkbox_{i}')] for i, habit in enumerate(self.esosie_paradumi)])],
             [sg.Button('Submit'), sg.Button('Cancel')]
         ]
         return layout
 
     def run(self):
         while True:
+            f = Fer(self.key)
             event, values = self.window.read()
             if event in (sg.WIN_CLOSED, 'Cancel'):
                 break
@@ -132,17 +140,18 @@ class HaBiotic:
                 for entry in new_entry_value.split(','):
                     entry = entry.strip()
                     if entry:
-                        if entry not in self.layout[1]:
+                        if entry not in self.esosie_paradumi:
                             # Insert new entry into entries and habits tables
+
                             piev = (self.user_id, entry, self.now)
                             self.c.execute("INSERT INTO entries (user_id ,habit ,time) VALUES (?, ?, ?)", piev)
                             self.fails.commit()
                             self.d.execute("INSERT INTO habits (user_id ,name) VALUES (?, ?)", (self.user_id, entry))
                             self.par.commit()
                 for i in selected_indices:
-                    selected_value = self.layout[1][i]
-                    if selected_value not in new_entry_value:
-                        piev = (self.user_id, selected_value, self.now)
+                    selected_value = self.layout[2][i]
+                    if i != new_entry_value:
+                        piev = (self.user_id, i, self.now)
                         self.c.execute("INSERT INTO entries (user_id ,habit ,time) VALUES (?, ?, ?)", piev)
                         self.fails.commit()
 
