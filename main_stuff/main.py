@@ -21,13 +21,24 @@ class HaBioticLogin:
 
     def run(self):
         while True:
+            self.conn = sq.connect('dati.db')
+            self.c = self.conn.cursor()
+            self.c.execute('''CREATE TABLE IF NOT EXISTS users(
+                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   user_name TEXT,
+                   password TEXT   
+             )''')
+        
+            self.c.execute('''CREATE TABLE IF NOT EXISTS entries(
+                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   user_id INT REFERENCES users(id),
+                   habit TEXT,
+                   time TEXT   
+                   )''')
             event, values = self.window.read()
             if event in (sg.WIN_CLOSED, 'Cancel'):
                 return None
             if event == 'Login':
-                # Connect to the database
-                self.conn = sq.connect('dati.db')
-                self.c = self.conn.cursor()
                 # Check if user exists and password is correct
                 self.c.execute("SELECT * FROM users WHERE user_name=?", (values['Uname'],))
                 self.user = self.c.fetchone()
@@ -135,13 +146,13 @@ class HaBiotic:
             if event in (sg.WIN_CLOSED, 'Cancel'):
                 break
             if event == 'Submit':
-                
+
                 g = 0
-                gow = []
+                selected_checks = []
                 for i in self.esosie_paradumi:
                     g += 1
                     if 'checkbox_{g}':
-                        gow.append(i) 
+                        selected_checks.append(i) 
                 new_entry_value = values['paradums']
                 for entry in new_entry_value.split(','):
                     entry = entry.strip()
@@ -154,9 +165,9 @@ class HaBiotic:
                             self.fails.commit()
                             self.d.execute("INSERT INTO habits (user_id ,name) VALUES (?, ?)", (self.user_id, entry))
                             self.par.commit()
-                for a in gow:
-                    if a != new_entry_value:
-                        piev = (self.user_id, a, self.now)
+                for check in selected_checks:
+                    if check != new_entry_value:
+                        piev = (self.user_id, check, self.now)
                         self.c.execute("INSERT INTO entries (user_id ,habit ,time) VALUES (?, ?, ?)", piev)
                         self.fails.commit()
 
