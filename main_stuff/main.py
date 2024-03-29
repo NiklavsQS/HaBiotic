@@ -135,7 +135,13 @@ class HaBiotic:
             if event in (sg.WIN_CLOSED, 'Cancel'):
                 break
             if event == 'Submit':
-                selected_indices = [i for i, habit in enumerate(self.layout[1]) if values.get(f'checkbox_{i}')]
+                
+                g = 0
+                gow = []
+                for i in self.esosie_paradumi:
+                    g += 1
+                    if 'checkbox_{g}':
+                        gow.append(i) 
                 new_entry_value = values['paradums']
                 for entry in new_entry_value.split(','):
                     entry = entry.strip()
@@ -148,10 +154,9 @@ class HaBiotic:
                             self.fails.commit()
                             self.d.execute("INSERT INTO habits (user_id ,name) VALUES (?, ?)", (self.user_id, entry))
                             self.par.commit()
-                for i in selected_indices:
-                    selected_value = self.layout[2][i]
-                    if i != new_entry_value:
-                        piev = (self.user_id, i, self.now)
+                for a in gow:
+                    if a != new_entry_value:
+                        piev = (self.user_id, a, self.now)
                         self.c.execute("INSERT INTO entries (user_id ,habit ,time) VALUES (?, ?, ?)", piev)
                         self.fails.commit()
 
