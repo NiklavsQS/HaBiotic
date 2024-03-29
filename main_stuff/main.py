@@ -111,18 +111,6 @@ class HaBiotic:
               user_id INT REFERENCES users(id),
               name TEXT
               )''')
-        self.c.execute('''CREATE TABLE IF NOT EXISTS users(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_name TEXT,
-              password TEXT   
-        )''')
-
-        self.c.execute('''CREATE TABLE IF NOT EXISTS entries(
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_id INT REFERENCES users(id),
-              habit TEXT,
-              time TEXT   
-              )''')
 
         self.layout = self.create_layout()  # Initialize layout
         self.window = sg.Window("HaBiotic", self.layout)
