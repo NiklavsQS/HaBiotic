@@ -23,8 +23,8 @@ class HaBioticLogin:
         sg.theme('DarkAmber')
         # Login window layout
         self.layout = [
-            [sg.Text('Username'), sg.InputText(key='Uname')],
-            [sg.Text('Password'), sg.InputText(key='Pass', password_char='*')],
+            [sg.Text('Username'), sg.Stretch(), sg.InputText(key='Uname')],
+            [sg.Text('Password'), sg.Stretch(), sg.InputText(key='Pass', password_char='*')],
             [sg.Button('Login'), sg.Button('Register'), sg.Button('Cancel')]
         ]
         self.window = sg.Window("Login", self.layout)
@@ -58,6 +58,7 @@ class HaBioticLogin:
                     # Decrypt password and check if it matches
                     parole_check = f.decrypt(self.user[3]).decode()
                     if parole_check == values['Pass']:
+
                         self.window.close()
                         user_id = self.user[0]
                         return user_id  # Return the user ID
@@ -177,9 +178,9 @@ class HaBiotic:
 
         # Main window layout
         layout = [
-            [sg.Image(key='Ikona', data=icon_data),
+            [sg.Stretch(), sg.Image(key='Ikona', data=icon_data),
              sg.Text(f'Temperatūra šobrīd: {temperature}°C', key='Temp')],
-            [sg.Text('Enter habit or select from existing'), sg.InputText(key='paradums')],
+            [sg.Text('Enter habit or select from existing'), sg.Stretch(), sg.InputText(key='paradums')],
             [sg.Column([[sg.Checkbox(habit, key=f'checkbox_{i}')] for i, habit in enumerate(self.esosie_paradumi)])],
             [sg.Button('Submit'), sg.Button('Cancel')]
         ]
