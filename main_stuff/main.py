@@ -182,13 +182,11 @@ class HaBiotic:
             times = self.c.fetchone() 
             if times is not None :
                 time = times[0]
-                print(time)
                 # Convert the date string to a datetime object
                 date_of_entry = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M')
                 now_time = datetime.datetime.strptime(self.now, '%Y-%m-%d %H:%M')
                 # Calculate the time difference
                 time_diff = now_time - date_of_entry
-                print(time_diff)
                 laiki.append(time_diff)
 
         # Main window layout
