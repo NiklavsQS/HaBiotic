@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import datetime
 import sqlite3 as sq
 from cryptography.fernet import Fernet as Fer
+import requests as rq
 # SQL queries
 lietotaja_parbaude = "SELECT * FROM users WHERE user_name = ? AND password = ?"
 nepareiza_parole = "SELECT * FROM users WHERE user_name = ?"
@@ -10,7 +11,7 @@ paradumu_atlase = "SELECT * FROM habits WHERE user_id = ?"
 
 class HaBioticLogin:
     def __init__(self):
-        sg.theme('SystemDefault')
+        sg.theme('DarkAmber')
         # Login window layout
         self.layout = [
             [sg.Text('Username'), sg.InputText(key='Uname')],
@@ -25,6 +26,7 @@ class HaBioticLogin:
             self.c = self.conn.cursor()
             self.c.execute('''CREATE TABLE IF NOT EXISTS users(
                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                   city TEXT,
                    user_name TEXT,
                    password TEXT   
              )''')
@@ -43,9 +45,10 @@ class HaBioticLogin:
                 self.c.execute("SELECT * FROM users WHERE user_name=?", (values['Uname'],))
                 self.user = self.c.fetchone()
                 if self.user:
-                    if self.user[1] == values['Pass']:  # Check if password matches
+                    if self.user[2] == values['Pass']:  # Check if password matches
                         self.window.close()
-                        return self.user[0]  # Return the user ID
+                        user_id = self.user[0]
+                        return user_id  # Return the user ID
                     else:
                         sg.popup_ok('Invalid password')
                 else:
@@ -81,11 +84,23 @@ class HaBioticLogin:
                 sg.popup('Jaunā parole netika ievadīta')
                 return None  # Return None if user cancels registration
             else:
-                break  # Break the loop if the password is valid
-        
-        new_user = (n_uname, n_pass)
-        c.execute("INSERT INTO users (user_name, password) VALUES (?, ?)", new_user)
-        conn.commit()
+                break    
+
+        while True:
+            Atrvieta = sg.popup_get_text('ievadi atrasšanās vietu priekš laikapstākļu noteikšanas (neobligāti)', title="Atrasšanās vieta")
+            if not Atrvieta:
+                break
+            if Atrvieta:
+                break
+        if Atrvieta != '':
+            new_user = (Atrvieta, n_uname, n_pass)
+            c.execute("INSERT INTO users (city, user_name, password) VALUES (?, ?, ?)", new_user)
+            conn.commit()
+        else:
+            new_user = (n_uname, n_pass)
+            c.execute("INSERT INTO users (user_name, password) VALUES (?, ?)", new_user)
+            conn.commit()
+
         
         return c.lastrowid  # Return the last inserted row ID
 
@@ -111,22 +126,51 @@ class HaBiotic:
               user_id INT REFERENCES users(id),
               name TEXT
               )''')
-
+        self.weather = self.dabut_laikapstaklus()
         self.layout = self.create_layout()  # Initialize layout
         self.window = sg.Window("HaBiotic", self.layout)
+ 
+
+    def dabut_laikapstaklus(self):
+            self.c.execute("SELECT city FROM users WHERE id=?", (self.user_id,))
+            Atrvieta = self.c.fetchone()
+            
+            if Atrvieta != '':
+                APIkey = '468b7c127431d50c92409468e58abdc9'
+                Url = f'http://api.openweathermap.org/data/2.5/weather?q={Atrvieta[0]}&appid={APIkey}&units=metric'
+                try:
+                    atbilde = rq.get(Url)
+                    atbilde.raise_for_status()  # Raise an exception for 4xx and 5xx errors
+                    dati = atbilde.json()
+                    return dati
+                except rq.exceptions.RequestException as error:
+                    print("Radās kļūda:", error)
+                    return None
 
     def create_layout(self):
         # Fetch existing habits from the database
         self.d.execute(paradumu_atlase, (self.user_id,))
         self.esosie_paradumi = [row[2] for row in self.d.fetchall()]
+        weather_data = self.weather.get('weather', [])
+        weather_icon = weather_data[0].get('icon', '')
+        temperature = float(self.weather.get('main', {}).get('temp', ''))
+
+        icon_url = f'http://openweathermap.org/img/wn/{weather_icon}.png'
+        icon_response = rq.get(icon_url)
+        icon_data = icon_response.content
+
+
         # Main window layout
         layout = [
+            [sg.Image(key='Ikona', data = icon_data),
+             sg.Text(f'Temperatūra šobrīd: {temperature}°C', key='Temp')],
             [sg.Text('Enter habit or select from existing'), sg.InputText(key='paradums')],
             [sg.Column([[sg.Checkbox(habit, key=f'checkbox_{i}')] for i, habit in enumerate(self.esosie_paradumi)])],
             [sg.Button('Submit'), sg.Button('Cancel')]
         ]
         return layout
-
+    
+    
     def run(self):
         while True:
             f = Fer(self.key)
