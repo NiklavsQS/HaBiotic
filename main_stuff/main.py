@@ -127,7 +127,7 @@ class HaBiotic:
     def __init__(self, user_id):
         
         self.user_id = user_id
-        self.now = datetime.datetime.now().strftime("%Y-%m-%d")
+        self.now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         self.par = sq.connect('paradumi.db')
         self.fails = sq.connect('dati.db')
         self.d = self.par.cursor()
@@ -176,13 +176,28 @@ class HaBiotic:
         icon_response = rq.get(icon_url)
         icon_data = icon_response.content
 
+        laiki = []
+        for i in self.esosie_paradumii:
+            self.c.execute("SELECT time FROM entries WHERE habit = ? AND user_id = ? ORDER BY id DESC LIMIT 1", (i, self.user_id,))
+            times = self.c.fetchone() 
+            if times is not None :
+                time = times[0]
+                print(time)
+                # Convert the date string to a datetime object
+                date_of_entry = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M')
+                now_time = datetime.datetime.strptime(self.now, '%Y-%m-%d %H:%M')
+                # Calculate the time difference
+                time_diff = now_time - date_of_entry
+                print(time_diff)
+                laiki.append(time_diff)
+
         # Main window layout
         layout = [
             [sg.Stretch(), sg.Image(key='Ikona', data=icon_data),
              sg.Text(f'Temperatūra šobrīd: {temperature}°C', key='Temp')],
             [sg.Text('Enter habit or select from existing'), sg.Stretch(), sg.InputText(key='paradums')],
-            [sg.Column([[sg.Checkbox(habit, key=f'checkbox_{i}')] for i, habit in enumerate(self.esosie_paradumi)])],
-            [sg.Button('Submit'), sg.Button('Cancel')]
+            [sg.Column([[sg.Checkbox(habit, key=f'checkbox_{i}'), sg.Text(laiki[i] if laiki is not None else '')] for i, habit in enumerate(self.esosie_paradumi)])],
+            [sg.Stretch(), sg.Button('Submit'), sg.Button('Cancel'), sg.Stretch()]
         ]
         return layout
     
