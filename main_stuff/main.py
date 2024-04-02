@@ -2,7 +2,8 @@ import PySimpleGUI as sg  # Importējam PySimpleGUI bibliotēku saskarnei
 import datetime  # Importējam datetime bibliotēku laikam
 import sqlite3 as sq  # Importējam sqlite3 bibliotēku datubāzēm
 from cryptography.fernet import Fernet  # Importējam Fernet kriptogrāfijai
-import requests as rq  # Importējam requets moduli API
+import requests as rq  # Importējam requests moduli API
+import os # importējam os bibliotēku failu meklēšanai
 
 # SQL dati
 lietotaja_parbaude = "SELECT * FROM users WHERE user_name = ? AND password = ?"
@@ -11,11 +12,16 @@ lietotaja_id = "SELECT id FROM users WHERE user_name = ?"
 paradumu_atlase = "SELECT * FROM habits WHERE user_id = ?"
 
 # Izveido vai nolasa atslēgu
-with open('key.key', 'rb') as keyfile:
-    key = keyfile.read()
-    if len(key) == 0:
-        key = Fernet.generate_key()
-        with open('key.key', 'wb') as keyfile:
+if os.path.exists('key.key'):
+    with open('key.key', 'rb') as keyfile:
+        key = keyfile.read()
+        if len(key) == 0:
+            key = Fernet.generate_key()
+            with open('key.key', 'wb') as keyfile:
+                keyfile.write(key)
+else:
+    key = Fernet.generate_key()
+    with open('key.key', 'wb') as keyfile:
             keyfile.write(key)
 
 class HaBioticLogin:
