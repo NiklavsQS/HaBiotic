@@ -3,6 +3,7 @@ import datetime  # Importing datetime module for handling dates and times
 import sqlite3 as sq  # Importing sqlite3 for working with SQLite databases
 from cryptography.fernet import Fernet  # Importing Fernet from cryptography module for encryption
 import requests as rq  # Importing requests module for making HTTP requests
+import os
 
 # SQL queries for database operations
 lietotaja_parbaude = "SELECT * FROM users WHERE user_name = ? AND password = ?"
@@ -11,13 +12,19 @@ lietotaja_id = "SELECT id FROM users WHERE user_name = ?"
 paradumu_atlase = "SELECT * FROM habits WHERE user_id = ?"
 
 # Generate or read the encryption key
-with open('key.key', 'rb') as keyfile:
-    key = keyfile.read()
-    # If key file is empty, generate a new key and save it
-    if len(key) == 0:
-        key = Fernet.generate_key()
-        with open('key.key', 'wb') as keyfile:
-            keyfile.write(key)
+
+if os.path.exists('key.key'):
+    with open('key.key', 'rb') as keyfile:
+        key = keyfile.read()
+        # If key file is empty, generate a new key and save it
+        if len(key) == 0:
+            key = Fernet.generate_key()
+            with open('key.key', 'wb') as keyfile:
+                keyfile.write(key)
+else:
+    key = Fernet.generate_key()
+    with open('key.key', 'wb') as keyfile:
+        keyfile.write(key)
 
 # Class for the login window
 class HaBioticLogin:
