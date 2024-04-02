@@ -1,42 +1,37 @@
-import PySimpleGUI as sg  # Importing PySimpleGUI for creating GUI
-import datetime  # Importing datetime module for handling dates and times
-import sqlite3 as sq  # Importing sqlite3 for working with SQLite databases
-from cryptography.fernet import Fernet  # Importing Fernet from cryptography module for encryption
-import requests as rq  # Importing requests module for making HTTP requests
+import PySimpleGUI as sg  # Importējam PySimpleGUI bibliotēku saskarnei
+import datetime  # Importējam datetime bibliotēku laikam
+import sqlite3 as sq  # Importējam sqlite3 bibliotēku datubāzēm
+from cryptography.fernet import Fernet  # Importējam Fernet kriptogrāfijai
+import requests as rq  # Importējam requets moduli API
 
-# SQL queries for database operations
+# SQL dati
 lietotaja_parbaude = "SELECT * FROM users WHERE user_name = ? AND password = ?"
 nepareiza_parole = "SELECT * FROM users WHERE user_name = ?"
 lietotaja_id = "SELECT id FROM users WHERE user_name = ?"
 paradumu_atlase = "SELECT * FROM habits WHERE user_id = ?"
 
-# Generate or read the encryption key
+# Izveido vai nolasa atslēgu
 with open('key.key', 'rb') as keyfile:
     key = keyfile.read()
-    # If key file is empty, generate a new key and save it
     if len(key) == 0:
         key = Fernet.generate_key()
         with open('key.key', 'wb') as keyfile:
             keyfile.write(key)
 
-# Class for the login window
 class HaBioticLogin:
     def __init__(self):
-        sg.theme('DarkAmber')  # Set the theme for PySimpleGUI elements
-        # Define the layout for the login window
-        self.layout = [
-            [sg.Text('Username'), sg.Stretch(), sg.InputText(key='Uname')],  # Username input field
-            [sg.Text('Password'), sg.Stretch(), sg.InputText(key='Pass', password_char='*')],  # Password input field
-            [sg.Button('Login'), sg.Button('Register'), sg.Button('Cancel')]  # Login, Register, and Cancel buttons
+        sg.theme('DarkAmber')  # Noformējums PySimpleGUI
+        self.layout = [                     # Pieslēgšanās loga izkārtojums
+            [sg.Text('Lietotājvārds'), sg.Stretch(), sg.InputText(key='Uname')],  
+            [sg.Text('Parole'), sg.Stretch(), sg.InputText(key='Pass', password_char='*')],  
+            [sg.Button('Pieslēgties'), sg.Button('Reģistrēties'), sg.Button('Aizvērt')]  
         ]
-        self.window = sg.Window("Login", self.layout)  # Create the login window with the specified layout
+        self.window = sg.Window("Pieslēgšanās", self.layout, icon=r'assets/download.ico')  # Pieslēgšanās loga izveide
 
-    # Method to run the login window
-    def run(self):
-        f = Fernet(key)  # Create a Fernet object with the encryption key
+    def run(self):        # Palaiž pieslēgšanās logu
+        f = Fernet(key)  
         while True:
-            # Connect to the database and create necessary tables if they don't exist
-            self.conn = sq.connect('dati.db')
+            self.conn = sq.connect('dati.db')       # Savienojas ar datubāzi un izveido datubāzes, ja to nav
             self.c = self.conn.cursor()
             self.c.execute('''CREATE TABLE IF NOT EXISTS users(
                    id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,202 +46,186 @@ class HaBioticLogin:
                    habit BLOB,
                    time TEXT   
                    )''')
-            event, values = self.window.read()  # Read events and values from the window
-            if event in (sg.WIN_CLOSED, 'Cancel'):  # If user closes the window or clicks Cancel button, return None
+            event, values = self.window.read()  # Nolasa informāciju no loga
+            if event in (sg.WIN_CLOSED, 'Aizvērt'):  # Aizvērt pogas notikums
                 return None
-            if event == 'Login':  # If user clicks the Login button
-                # Check if user exists and password is correct
-                self.c.execute("SELECT * FROM users WHERE user_name=?", (values['Uname'],))
+            if event == 'Pieslēgties':  # Pieslēgšanās pogas notikums
+                self.c.execute("SELECT * FROM users WHERE user_name=?", (values['Uname'],))  # Pārbauda vai lietotāja ievadītie dati ir pareizi
                 self.user = self.c.fetchone()
                 if self.user:
-                    # Decrypt password and check if it matches
-                    parole_check = f.decrypt(self.user[3]).decode()
+                    parole_check = f.decrypt(self.user[3]).decode()        # Atšifrē paroli un salīdzina
                     if parole_check == values['Pass']:
-                        self.window.close()  # Close the login window
-                        user_id = self.user[0]  # Get the user ID
-                        return user_id  # Return the user ID
+                        self.window.close()  
+                        user_id = self.user[0]  
+                        return user_id  
                     else:
-                        sg.popup_ok('Invalid password')  # Show a popup for invalid password
+                        sg.popup_ok('Invalid password')  # Ja parole ir nepareiza, izvada ziņu
                 else:
-                    sg.popup_ok('User does not exist. Please register or try a different username.')  # Show a popup for non-existent user
-            elif event == 'Register':  # If user clicks the Register button
-                self.window.close()  # Close the login window
-                user_id = self.register()  # Call the register method to handle registration
-                if user_id is not None:  # If registration is successful, return the user ID
+                    sg.popup_ok('Lietotājs neeksistē')  # Ja lietotājs neeksistē, izvada ziņu
+            elif event == 'Reģistrēties':  # Reģistrācijas pogas notikums
+                self.window.close()  # Aizver pieslēgšanās logu
+                user_id = self.register()  # Atver reģistrēšanās logu
+                if user_id is not None:  # Ja reģistrācija ir veiksmīga, atgriež lietotāja ID
                     return user_id
 
-        self.window.close()  # Close the login window
-
-    # Method to handle user registration
-    def register(self):
-        f = Fernet(key)  # Create a Fernet object with the encryption key
-        conn = sq.connect('dati.db')  # Connect to the database
-        c = conn.cursor()  # Create a cursor object for database operations
+    def register(self):      # Palaiž reģistrēšanās logu
+        f = Fernet(key)  # Izveido fernet objektu, lai varētu izmantot atslēgu
+        conn = sq.connect('dati.db')  # Savienojas ar datubāzi
+        c = conn.cursor() 
         
         while True:
-            n_uname = sg.popup_get_text('Enter new username', title="Username")  # Get new username from user
-            if not n_uname:  # If username is empty
-                sg.popup('New username not entered')  # Show a popup message
-                return None  # Return None if user cancels registration
+            n_uname = sg.popup_get_text('Ievadiet jaunu lietotājvārdu', title="Lietotājvārds")  # Jauna lietotājvārda ievades lauks
+            if not n_uname: 
+                sg.popup('Lietotājvārds netika ievadīts') # Ja ievades lauks ir tukšs, izvada ziņu
+                return None  
                 
             c.execute(nepareiza_parole, (n_uname,))
             user_check = c.fetchone()
-            if user_check:  # If the username already exists in the database
-                sg.popup('Username already exists')  # Show a popup message
+            if user_check:  # Pārbauda vai lietotājvārds jau ir datubāzē
+                sg.popup('Lietotājvārds jau pastāv')  # Ja lietotājvārds jau ir datubāzē, izvada ziņu
             else:
-                break  # Break the loop if the username is valid
+                break  # Pārstaj ciklu, ja lietotājvārds ir pieņemams
         
         while True:
-            n_pass = sg.popup_get_text('Enter new password', title="Password", password_char='*')  # Get new password from user
-            if not n_pass:  # If password is empty
-                sg.popup('New password not entered')  # Show a popup message
-                return None  # Return None if user cancels registration
+            n_pass = sg.popup_get_text('Ievadiet jaunu paroli', title="Parole", password_char='')  # Jaunas paroles ievades lauks
+            if not n_pass:  
+                sg.popup('Parole netika ievadīts')  # Ja ievades lauks ir tukšs, izvada ziņu
+                return None  
             else:
-                break  # Break the loop if the password is entered    
+                break  # Pārstaj ciklu, ja parole ir pieņemama    
 
         while True:
-            location = sg.popup_get_text('Enter location for weather (optional)', title="Location")  # Get location for weather
-            if not location:  # If location is empty
-                break  # Break the loop
-            if location:
-                break  # Break the loop if location is entered
-        if location != '':  # If location is not empty
-            location_encrypted = f.encrypt(location.encode())  # Encrypt the location
-            password_encrypted = f.encrypt(n_pass.encode())  # Encrypt the password
+            location = sg.popup_get_text('Ievadiet pilsētu laikapstākļiem (neobligāti)', title="Laikapstākļi")  # Lokācijas ievades lauks
+            if not location:  # Ja neaizpilda lauku, beidz ciklu
+                break  
+            if location: # Ja aizpilda lauku, beidz ciklu
+                break  
+        if location != '':  # Ja aizpilda
+            location_encrypted = f.encrypt(location.encode())  # Šifrē lokāciju
+            password_encrypted = f.encrypt(n_pass.encode())  # Šifrē paroli
 
-            new_user = (location_encrypted, n_uname, password_encrypted)  # Create a tuple for new user data
-            c.execute("INSERT INTO users (city, user_name, password) VALUES (?, ?, ?)", new_user)  # Insert new user data into the database
-            conn.commit()  # Commit the transaction
+            new_user = (location_encrypted, n_uname, password_encrypted)  # Izveido kortežu ar jaunajiem lietotāja datiem
+            c.execute("INSERT INTO users (city, user_name, password) VALUES (?, ?, ?)", new_user)  # Ievieto jaunos datus datubāzē
+            conn.commit()  
         else:
-            # If location is not provided, insert NULL
-            new_user = (None, n_uname, n_pass)  # Create a tuple for new user data with NULL location
-            c.execute("INSERT INTO users (city, user_name, password) VALUES (?, ?, ?)", new_user)  # Insert new user data into the database
-            conn.commit()  # Commit the transaction
+            new_user = (None, n_uname, n_pass)  # Jaunie dati bez atrašanās vietas
+            c.execute("INSERT INTO users (city, user_name, password) VALUES (?, ?, ?)", new_user)  # Ievieto jaunos datus datubāzē
+            conn.commit()  
 
-        return c.lastrowid  # Return the last inserted row ID
+        return c.lastrowid  
 
 
 class HaBiotic:
     def __init__(self, user_id):
         
         self.user_id = user_id  # Initialize the user ID
-        self.now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")  # Get the current date and time
-        self.par = sq.connect('paradumi.db')  # Connect to the database for habits
-        self.fails = sq.connect('dati.db')  # Connect to the database for entries
-        self.d = self.par.cursor()  # Create a cursor object for habits database
-        self.c = self.fails.cursor()  # Create a cursor object for entries database
-        # Create tables if they do not exist
-        self.d.execute('''CREATE TABLE IF NOT EXISTS habits(
+        self.now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")  # Iegūst pašreizējo datumu un laiku
+        self.par = sq.connect('paradumi.db')  # Savienojas ar paradumu datubāzi
+        self.fails = sq.connect('dati.db')  # Savienojas ar ievades datu datubāzi
+        self.d = self.par.cursor()  
+        self.c = self.fails.cursor()  
+        # izveido datubāzes, ja to nav
+        self.d.execute('''CREATE TABLE IF NOT EXISTS habits( 
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               user_id INT REFERENCES users(id),
               name BLOB
               )''')
-        self.weather = self.dabut_laikapstaklus()  # Get weather data
-        self.layout = self.create_layout()  # Initialize layout
-        self.window = sg.Window("HaBiotic", self.layout)  # Create the main window
+        self.weather = self.dabut_laikapstaklus()  # Iegūst laikapstākļu datus
+        self.layout = self.create_layout()  # Izkārtojums
+        self.window = sg.Window("HaBiotic", self.layout, icon=r'assets/download.ico')  # Izveido galveno logu
 
-    # Method to fetch weather data
-    def dabut_laikapstaklus(self):
-            self.f = Fernet(key)  # Create a Fernet object with the encryption key
+    def dabut_laikapstaklus(self):      # Metode laikapstākļu iegūšanai
+            self.f = Fernet(key)  # Fernet objekts, lai varētu lietot šifrēšanu
             self.c.execute("SELECT city FROM users WHERE id=?", (self.user_id,))
             location_encrypted = self.c.fetchone()
-            location = self.f.decrypt(location_encrypted[0]).decode() if location_encrypted else ''  # Decrypt location if available
+            location = self.f.decrypt(location_encrypted[0]).decode() if location_encrypted else ''  # Atšifrē atrašanās vietu, ja iespējams
             
+            # Izmanto requests lai iegūtu laikapstākļu datus no openweathermap API
             if location != '':
                 APIkey = '468b7c127431d50c92409468e58abdc9'
                 Url = f'http://api.openweathermap.org/data/2.5/weather?q={location}&appid={APIkey}&units=metric'
                 try:
-                    response = rq.get(Url)  # Make a GET request to the weather API
-                    response.raise_for_status()  # Raise an exception for 4xx and 5xx errors
-                    data = response.json()  # Convert response to JSON format
-                    return data  # Return the weather data
+                    response = rq.get(Url)
+                    response.raise_for_status()  
+                    data = response.json()
+                    return data  
                 except rq.exceptions.RequestException as error:
-                    print("Error:", error)  # Print error message
-                    return None  # Return None if there's an error
+                    print("Error:", error)  
+                    return None  
 
-    # Method to create the layout for the main window
     def create_layout(self):
-        # Fetch existing habits from the database
         self.d.execute(paradumu_atlase, (self.user_id,))
-        self.esosie_paradumii = [row[2] for row in self.d.fetchall()]  # Fetch habits from the database
+        self.esosie_paradumii = [row[2] for row in self.d.fetchall()]  # Iegūst paradumus no datubāzes
         self.esosie_paradumi = []
-        self.esosie_paradumi.extend(self.f.decrypt(i).decode() for i in self.esosie_paradumii)  # Decrypt habit names
-        weather_data = self.weather.get('weather', [])  # Get weather data
-        weather_icon = weather_data[0].get('icon', '')  # Get weather icon
-        temperature = float(self.weather.get('main', {}).get('temp', ''))  # Get temperature
+        self.esosie_paradumi.extend(self.f.decrypt(i).decode() for i in self.esosie_paradumii)  # Atšifrē paradumu nosaukumus
+        weather_data = self.weather.get('weather', [])  # Iegūst laikapstākļu datus
+        weather_icon = weather_data[0].get('icon', '')  # Iegūst laikapstākļu ikonu
+        temperature = float(self.weather.get('main', {}).get('temp', ''))  # Iegūst temperatūru
 
-        icon_url = f'http://openweathermap.org/img/wn/{weather_icon}.png'  # URL for weather icon
-        icon_response = rq.get(icon_url)  # Get weather icon
-        icon_data = icon_response.content  # Get content of weather icon image
+        icon_url = f'http://openweathermap.org/img/wn/{weather_icon}.png'  # Saite ikonai
+        icon_response = rq.get(icon_url) 
+        icon_data = icon_response.content 
 
-                # Initialize an empty list for time differences
         laiki = []
         
-        # Iterate over the habits to calculate time differences
+        # Cikls lai aprēķinātu laiku kopš pēdējās reizes, kad lietotājs ir atzīmējis paradumu
         for i in self.esosie_paradumii:
             self.c.execute("SELECT time FROM entries WHERE habit = ? AND user_id = ? ORDER BY id DESC LIMIT 1", (i, self.user_id,))
-            times = self.c.fetchone()  # Fetch the latest entry time for each habit
+            times = self.c.fetchone()  
             if times is not None:
-                time = times[0]  # Extract the time value
-                # Convert the date string to a datetime object
-                date_of_entry = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M')
+                time = times[0]  
+                date_of_entry = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M') # Pārveido uz datetime objektu
                 now_time = datetime.datetime.strptime(self.now, '%Y-%m-%d %H:%M')
-                # Calculate the time difference
-                time_diff = now_time - date_of_entry
-                laiki.append(time_diff)  # Append the time difference to the list
-
-        # Main window layout
+                time_diff = now_time - date_of_entry # Aprēķina starpību
+                laiki.append(time_diff)  # Pievieno laiku sarakstam
+        # Galvenā loga izkārtojums
         layout = [
-            [sg.Stretch(), sg.Image(key='Ikona', data=icon_data), sg.Text(f'Temperatūra šobrīd: {temperature}°C', key='Temp')],  # Weather icon and temperature display
-            [sg.Text('Enter habit or select from existing'), sg.Stretch(), sg.InputText(key='paradums')],  # Input field for new habit
-            [sg.Column([[sg.Checkbox(habit, key=f'checkbox_{i}'), sg.Text(laiki[i] if laiki else '')] for i, habit in enumerate(self.esosie_paradumi)])],  # Display existing habits and their time differences
-            [sg.Stretch(), sg.Button('Submit'), sg.Button('Cancel'), sg.Stretch()]  # Submit and Cancel buttons
+            [sg.Stretch(), sg.Image(key='Ikona', data=icon_data), sg.Text(f'Temperatūra šobrīd: {temperature}°C', key='Temp')],  
+            [sg.Text('Izveidojiet ieradumu vai izvēlieties kādu no esošajiem'), sg.Stretch(), sg.InputText(key='paradums')],  # Ievades lauks jauniem ieradumiem
+            [sg.Column([[sg.Checkbox(habit, key=f'checkbox_{i}'), sg.Text(laiki[i] if laiki else '')] for i, habit in enumerate(self.esosie_paradumi)])],  
+            [sg.Stretch(), sg.Button('Turpināt'), sg.Button('Atcelt'), sg.Stretch()]  
         ]
-        return layout  # Return the layout
+        return layout  # Atgriež izkārtojumu
 
-    # Method to run the main window
-    def run(self):
+
+    def run(self):    # Palaiž galveno logu
         while True:
-            event, values = self.window.read()  # Read events and values from the window
-            if event in (sg.WIN_CLOSED, 'Cancel'):  # If user closes the window or clicks Cancel button, break the loop
+            event, values = self.window.read()  # Nolasa vērtības no loga
+            if event in (sg.WIN_CLOSED, 'Aizvērt'):  # Ja lietotājs aizver logu vai uzspiež pogu 'Aizvērt', logs aizveras
                 break
-            if event == 'Submit':  # If user clicks the Submit button
-                # Encrypt habit names
+            if event == 'Turpināt':  # Ja lietotājs nospiež pogu 'Turpināt'
                 f = Fernet(key)
-                new_entry_value = values['paradums']  # Get the value entered in the input field
-                encrypted_habits = [f.encrypt(habit.encode()) for habit in self.esosie_paradumi]  # Encrypt existing habit names
-                selected_checks = [values[f'checkbox_{i}'] for i in range(len(self.esosie_paradumi))]  # Get the state of checkboxes
+                new_entry_value = values['paradums']  # Iegūst laukā ievadīto 
+                encrypted_habits = [f.encrypt(habit.encode()) for habit in self.esosie_paradumi]  # Šifrē eksistējošo paradumu nosaukumus
+                selected_checks = [values[f'checkbox_{i}'] for i in range(len(self.esosie_paradumi))]  
 
-                # Iterate over existing habits to handle checked checkboxes
-                for i, habit in enumerate(self.esosie_paradumi):
+
+                for i, habit in enumerate(self.esosie_paradumi):                # Cikls lai pārbaudītu checkbox
                     if selected_checks[i] and habit != new_entry_value:
-                        # Insert checked habits into the entries database
                         self.c.execute("INSERT INTO entries (user_id, habit, time) VALUES (?, ?, ?)", (self.user_id, encrypted_habits[i], self.now))
-                        self.fails.commit()  # Commit the transaction
+                        self.fails.commit()  
 
-                if new_entry_value:  # If a new habit is entered
-                    # Insert new habit into the entries and habits databases
+                if new_entry_value:  # Pievieno jaunu ieradumu datubāzei
                     encrypted_new_entry = f.encrypt(new_entry_value.encode())
                     self.c.execute("INSERT INTO entries (user_id, habit, time) VALUES (?, ?, ?)", (self.user_id, encrypted_new_entry, self.now))
-                    self.fails.commit()  # Commit the transaction
+                    self.fails.commit()  
                     self.d.execute("INSERT INTO habits (user_id, name) VALUES (?, ?)", (self.user_id, encrypted_new_entry))
-                    self.par.commit()  # Commit the transaction
+                    self.par.commit()
 
-                # Recreate layout to reflect changes
-                self.layout = self.create_layout()  # Recreate the layout
-                self.window.close()  # Close the window
-                self.window = sg.Window("HaBiotic", self.layout)  # Create a new window with the updated layout
+                # Atjaunina izkārtojumu
+                self.layout = self.create_layout()  
+                self.window.close()  # Aizver logu
+                self.window = sg.Window("HaBiotic", self.layout, icon=r'assets/download.ico')  # Izveido logu ar jauno izvietojumu 
 
-        # Close database connections and the window when the loop breaks
-        self.par.close()  # Close the habits database connection
-        self.fails.close()  # Close the entries database connection
-        self.window.close()  # Close the main window
+        # Aizver savienojumus ar datubāzēm
+        self.par.close()   
+        self.fails.close()  
+        self.window.close()  
 
 
-# Main program logic
 if __name__ == "__main__":
-    login_app = HaBioticLogin()  # Create an instance of the login window
-    user_id = login_app.run()  # Run the login window and get the user ID
-    if user_id is not None:  # If user ID is obtained
-        app = HaBiotic(user_id)  # Create an instance of the main application
-        app.run()  # Run the main application
+    login_app = HaBioticLogin()  
+    user_id = login_app.run() 
+    if user_id is not None:  
+        app = HaBiotic(user_id)  
+        app.run()  
