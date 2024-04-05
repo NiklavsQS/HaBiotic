@@ -32,7 +32,7 @@ class HaBioticLogin:
             [sg.Text('Parole'), sg.Stretch(), sg.InputText(key='Pass', password_char='*')],  
             [sg.Button('Pieslēgties'), sg.Button('Reģistrēties'), sg.Button('Aizvērt')]  
         ]
-        self.window = sg.Window("Pieslēgšanās", self.layout, icon=r'assets/download.ico')  # Pieslēgšanās loga izveide
+        self.window = sg.Window("Pieslēgšanās", self.layout, icon=r'HaBiotic/assets/download.ico')  # Pieslēgšanās loga izveide
 
     def run(self):        # Palaiž pieslēgšanās logu
         f = Fernet(key)  
@@ -138,7 +138,8 @@ class HaBiotic:
               )''')
         self.weather = self.dabut_laikapstaklus()  # Iegūst laikapstākļu datus
         self.layout = self.create_layout()  # Izkārtojums
-        self.window = sg.Window("HaBiotic", self.layout, icon=r'assets/download.ico')  # Izveido galveno logu
+        self.window = sg.Window("HaBiotic", self.layout, icon=r'HaBiotic/assets/download.ico')  # Izveido galveno logu
+        
 
     def dabut_laikapstaklus(self):      # Metode laikapstākļu iegūšanai
             self.f = Fernet(key)  # Fernet objekts, lai varētu lietot šifrēšanu
