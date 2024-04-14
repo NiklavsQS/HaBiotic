@@ -188,9 +188,10 @@ class HaBiotic:
         # Galvenā loga izkārtojums
         layout = [
             [sg.Stretch(), sg.Image(key='Ikona', data=icon_data), sg.Text(f'Temperatūra šobrīd: {temperature}°C', key='Temp')],  
-            [sg.Text('Izveidojiet ieradumu vai izvēlieties kādu no esošajiem'), sg.Stretch(), sg.InputText(key='paradums')],  # Ievades lauks jauniem ieradumiem
+            [sg.Stretch(), sg.Text('Izveidojiet ieradumu vai izvēlieties kādu no esošajiem'), sg.Stretch()],
+            [sg.Stretch(), sg.InputText(key='paradums'), sg.Stretch()],  # Ievades lauks jauniem ieradumiem
             [sg.Column([[sg.Checkbox(habit, key=f'checkbox_{i}'), sg.Text(laiki[i] if laiki else '')] for i, habit in enumerate(self.esosie_paradumi)])],  
-            [sg.Stretch(), sg.Button('Turpināt'), sg.Button('Atcelt'), sg.Stretch()]  
+            [sg.Stretch(), sg.Button('Turpināt'), sg.Button('Aizvērt'), sg.Stretch()]  
         ]
         return layout  # Atgriež izkārtojumu
 
