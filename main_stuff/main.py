@@ -177,7 +177,7 @@ class HaBiotic:
         
         # Cikls lai aprēķinātu laiku kopš pēdējās reizes, kad lietotājs ir atzīmējis paradumu
         for i in self.esosie_paradumii:
-            self.c.execute("SELECT time FROM entries WHERE habit = ? AND user_id = ? ORDER BY id DESC LIMIT 1", (i, self.user_id,))
+            self.c.execute("SELECT time FROM entries WHERE habit = ? AND user_id = ? ORDER BY id DESC", (i, self.user_id,))
             times = self.c.fetchone()  
             if times is not None:
                 time = times[0]  
