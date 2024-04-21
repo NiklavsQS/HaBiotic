@@ -34,7 +34,7 @@ class HaBioticLogin:
         ]
         self.window = sg.Window("Pieslēgšanās", self.layout, icon=r'HaBiotic/assets/download.ico')  # Pieslēgšanās loga izveide
 
-    def run(self):        # Palaiž pieslēgšanās logu
+    def login(self):        # Palaiž pieslēgšanās logu
         f = Fernet(key)  
         while True:
             self.conn = sq.connect('dati.db')       # Savienojas ar datubāzi un izveido datubāzes, ja to nav
@@ -233,7 +233,7 @@ class HaBiotic:
 
 if __name__ == "__main__":
     login_app = HaBioticLogin()  
-    user_id = login_app.run() 
+    user_id = login_app.login() 
     if user_id is not None:  
         app = HaBiotic(user_id)  
         app.run()  
