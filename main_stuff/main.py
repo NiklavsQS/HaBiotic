@@ -80,28 +80,28 @@ class HaBioticLogin:
         c = conn.cursor() 
         
         while True:
-            n_uname = sg.popup_get_text('Ievadiet jaunu lietotājvārdu', title="Lietotājvārds")  # Jauna lietotājvārda ievades lauks
+            n_uname = sg.popup_get_text('Ievadiet jaunu lietotājvārdu', title="Lietotājvārds", icon=r'HaBiotic/assets/download.ico')  # Jauna lietotājvārda ievades lauks
             if not n_uname: 
-                sg.popup('Lietotājvārds netika ievadīts') # Ja ievades lauks ir tukšs, izvada ziņu
+                sg.popup('Lietotājvārds netika ievadīts', icon=r'HaBiotic/assets/download.ico') # Ja ievades lauks ir tukšs, izvada ziņu
                 return None  
                 
             c.execute(nepareiza_parole, (n_uname,))
             user_check = c.fetchone()
             if user_check:  # Pārbauda vai lietotājvārds jau ir datubāzē
-                sg.popup('Lietotājvārds jau pastāv')  # Ja lietotājvārds jau ir datubāzē, izvada ziņu
+                sg.popup('Lietotājvārds jau pastāv', icon=r'HaBiotic/assets/download.ico')  # Ja lietotājvārds jau ir datubāzē, izvada ziņu
             else:
                 break  # Pārstaj ciklu, ja lietotājvārds ir pieņemams
         
         while True:
-            n_pass = sg.popup_get_text('Ievadiet jaunu paroli', title="Parole", password_char='')  # Jaunas paroles ievades lauks
+            n_pass = sg.popup_get_text('Ievadiet jaunu paroli', title="Parole", password_char='', icon=r'HaBiotic/assets/download.ico')  # Jaunas paroles ievades lauks
             if not n_pass:  
-                sg.popup('Parole netika ievadīta')  # Ja ievades lauks ir tukšs, izvada ziņu
+                sg.popup('Parole netika ievadīta', icon=r'HaBiotic/assets/download.ico')  # Ja ievades lauks ir tukšs, izvada ziņu
                 return None  
             else:
                 break  # Pārstaj ciklu, ja parole ir pieņemama    
 
         while True:
-            location = sg.popup_get_text('Ievadiet pilsētu laikapstākļiem (neobligāti)', title="Laikapstākļi")  # Lokācijas ievades lauks
+            location = sg.popup_get_text('Ievadiet pilsētu laikapstākļiem (neobligāti)', title="Laikapstākļi", icon=r'HaBiotic/assets/download.ico')  # Lokācijas ievades lauks
             if not location:  # Ja neaizpilda lauku, beidz ciklu
                 break  
             if location: # Ja aizpilda lauku, beidz ciklu
@@ -223,7 +223,7 @@ class HaBiotic:
                 # Atjaunina izkārtojumu
                 self.layout = self.create_layout()  
                 self.window.close()  # Aizver logu
-                self.window = sg.Window("HaBiotic", self.layout, icon=r'assets/download.ico')  # Izveido logu ar jauno izvietojumu 
+                self.window = sg.Window("HaBiotic", self.layout, icon=r'HaBiotic/assets/download.ico')  # Izveido logu ar jauno izvietojumu 
 
         # Aizver savienojumus ar datubāzēm
         self.par.close()   
