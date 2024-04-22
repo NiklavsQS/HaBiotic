@@ -65,7 +65,7 @@ class HaBioticLogin:
                         user_id = self.user[0]  
                         return user_id  
                     else:
-                        sg.popup_ok('Invalid password')  # Ja parole ir nepareiza, izvada ziņu
+                        sg.popup_ok('Nepareiza parole')  # Ja parole ir nepareiza, izvada ziņu
                 else:
                     sg.popup_ok('Lietotājs neeksistē')  # Ja lietotājs neeksistē, izvada ziņu
             elif event == 'Reģistrēties':  # Reģistrācijas pogas notikums
