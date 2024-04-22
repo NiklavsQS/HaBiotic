@@ -95,7 +95,7 @@ class HaBioticLogin:
         while True:
             n_pass = sg.popup_get_text('Ievadiet jaunu paroli', title="Parole", password_char='')  # Jaunas paroles ievades lauks
             if not n_pass:  
-                sg.popup('Parole netika ievadīts')  # Ja ievades lauks ir tukšs, izvada ziņu
+                sg.popup('Parole netika ievadīta')  # Ja ievades lauks ir tukšs, izvada ziņu
                 return None  
             else:
                 break  # Pārstaj ciklu, ja parole ir pieņemama    
