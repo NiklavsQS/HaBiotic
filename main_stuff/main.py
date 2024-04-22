@@ -136,12 +136,12 @@ class HaBiotic:
               user_id INT REFERENCES users(id),
               name BLOB
               )''')
-        self.weather = self.dabut_laikapstaklus()  # Iegūst laikapstākļu datus
+        self.weather = self.iegut_laikapstaklus()  # Iegūst laikapstākļu datus
         self.layout = self.create_layout()  # Izkārtojums
         self.window = sg.Window("HaBiotic", self.layout, icon=r'HaBiotic/assets/download.ico')  # Izveido galveno logu
         
 
-    def dabut_laikapstaklus(self):      # Metode laikapstākļu iegūšanai
+    def iegut_laikapstaklus(self):      # Metode laikapstākļu iegūšanai
             self.f = Fernet(key)  # Fernet objekts, lai varētu lietot šifrēšanu
             self.c.execute("SELECT city FROM users WHERE id=?", (self.user_id,))
             location_encrypted = self.c.fetchone()
